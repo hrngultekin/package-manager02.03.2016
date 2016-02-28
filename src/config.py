@@ -38,7 +38,7 @@ class Config:
 
     def getBoolValue(self, option):
         default = self._initValue(option, False)
-        return self.config.value(option, QVariant(default))
+        return self.config.value(option, QVariant(default))=="True"
 
     def getNumValue(self, option):
         default = self._initValue(option, 0)

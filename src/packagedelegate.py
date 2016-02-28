@@ -127,6 +127,8 @@ class PackageDelegate(QStyledItemDelegate):
 
         buttonStyle = QStyleOptionButton()
         buttonStyle.state = QStyle.State_On if QVariant.value(index.model().data(index, Qt.CheckStateRole)) == QVariant(Qt.Checked) else QStyle.State_Off
+        
+        #print("CheckStateRole={}".format(QVariant.value(index.model().data(index, Qt.CheckStateRole))))
 
         if option.state & QStyle.State_MouseOver or option.state & QStyle.State_HasFocus:
             buttonStyle.state |= QStyle.State_HasFocus
@@ -156,12 +158,14 @@ class PackageDelegate(QStyledItemDelegate):
         ptype = QVariant.value(index.model().data(index, TypeRole))
         
         rate = QVariant.value(index.model().data(index, RateRole))#.toInt()[0])
+        #print("rate={}".format(rate))
+        
         installed = index.model().data(index, InstalledRole)
 
         # We need to request update if its not possible to get meta data about the package
         try:
             # Get Package Icon if exists
-            _icon = index.model().data(index, Qt.DecorationRole)
+            _icon = QVariant.value(index.model().data(index, Qt.DecorationRole))
         except:
             p.end()
             painter.drawPixmap(option.rect.topLeft(), pixmap)
@@ -235,7 +239,7 @@ class PackageDelegate(QStyledItemDelegate):
                 _component_width += rect.width() + 8
 
         if ptype not in ('None', 'normal'):
-            print("ptype= {}".format(ptype))
+            #print("ptype= {}".format(ptype))
             widthOfTitle = self.boldFontFM.width(title) + 6 + left + textInner + _component_width
             p.setFont(self.tagFont)
             rect = self.tagFontFM.boundingRect(option.rect, Qt.TextWordWrap, self.types[ptype][1])

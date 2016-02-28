@@ -101,7 +101,7 @@ class PM:
             errorTitle = i18n("Pisi Error")
             errorMessage = message
 
-        self.messageBox = QMessageBox(errorTitle, errorMessage, QMessageBox.Critical, QMessageBox.Ok, 0, 0)
+        self.messageBox = QMessageBox(QMessageBox.Critical,errorTitle, errorMessage, QMessageBox.Ok)
 
         if block:
             self.messageBox.exec_()

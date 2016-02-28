@@ -112,6 +112,10 @@ class WebDialog(PAbstractBox, Ui_WebDialog):
         reset_proxy_settings()
 
     def showPackageDetails(self, package, installed, summary='', description=''):
+        package = QVariant.value(package)
+        summary = QVariant.value(summary)
+        description = QVariant.value(description)
+        
         self.packageName.setText(package)
         self.filesList.clear()
 

@@ -59,7 +59,6 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
     
     def __init__(self, parent = None):
         super(MainWidget, self).__init__(parent)
-        #QWidget.__init__(parent)      # burada bir hata var
         
         self.setupUi(self)
         self.parent = parent
@@ -89,7 +88,7 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
         self.packageList.setItemDelegate(PackageDelegate(self, self.parent))
         self.packageList.setColumnWidth(0, 32)
 
-        #burada hata alabilirim
+        #burada hata var
         #self.packageList.model().dataChanged[QModelIndex,QModelIndex].connect(self.statusChanged)
         
         self.packageList.updateRequested.connect(self.initialize)
