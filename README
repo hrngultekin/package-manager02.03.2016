@@ -26,6 +26,15 @@ Installation
  ./setup.py update_messages
      will updates the changed localization strings
 
+
+Çalıştırma
+----------
+
+ ./setup.py build
+ python build/main.py
+ 
+ 
+
 More Information
 ----------------
 
