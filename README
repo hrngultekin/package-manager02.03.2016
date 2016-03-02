@@ -31,8 +31,10 @@ Installation
 ----------
 
  ./setup.py build
+     ile build altında dosyaları oluşturun
+     
  python build/main.py
- 
+     ile çalıştırın
  
 
 More Information
