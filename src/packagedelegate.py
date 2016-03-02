@@ -363,6 +363,8 @@ class PackageDelegate(QStyledItemDelegate):
         del pixmap
 
     def editorEvent(self, event, model, option, index):
+        #paket seçim olayında hata var seçim olayı gerçekleşiyor ama packageList sonraki seçimde görüyor
+        #geçici çözümle giderildi tamamen çözülmeli
         if event.type() == QEvent.MouseButtonRelease and index.column() == 0 and index.flags() & Qt.ItemIsUserCheckable:
             toggled = Qt.Checked if model.data(index, Qt.CheckStateRole) == QVariant(Qt.Unchecked) else Qt.Unchecked
             self.packageSelected.emit(bool(toggled))
