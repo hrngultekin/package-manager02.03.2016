@@ -31,7 +31,8 @@ class StateManager(QObject):
     (ALL, INSTALL, REMOVE, UPGRADE, HISTORY) = range(5)
 
     def __init__(self, parent=None):
-        QObject.__init__(self)
+        #QObject.__init__(self)
+        super(StateManager, self).__init__()
         self.state = self.ALL
         self._group_cache = {}
         self.iface = backend.pm.Iface()

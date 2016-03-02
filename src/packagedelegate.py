@@ -34,6 +34,7 @@ from PyQt5.QtCore import QRect
 from PyQt5.QtCore import QEvent
 from PyQt5.QtCore import QPoint
 from PyQt5.QtCore import QVariant
+from PyQt5.QtCore import pyqtSignal
 
 from pmutils import *
 from packagemodel import *
@@ -59,6 +60,7 @@ ROW_HEIGHT = 52
 ICON_SIZE = 2
 
 class PackageDelegate(QStyledItemDelegate):
+    packageSelected=pyqtSignal([bool])
 
     AppStyle = qApp.style
 
@@ -113,7 +115,7 @@ class PackageDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         if not index.isValid():
             return super(PackageDelegate, self).paint(painter, option, index)
-
+        
         if index.flags() & Qt.ItemIsUserCheckable:
             if index.column() == 0:
                 self.paintCheckBoxColumn(painter, option, index)
@@ -124,14 +126,14 @@ class PackageDelegate(QStyledItemDelegate):
 
     def paintCheckBoxColumn(self, painter, option, index):
         opt = QStyleOptionViewItem(option)
-
-        buttonStyle = QStyleOptionButton()
-        buttonStyle.state = QStyle.State_On if QVariant.value(index.model().data(index, Qt.CheckStateRole)) == QVariant(Qt.Checked) else QStyle.State_Off
         
-        #print("CheckStateRole={}".format(QVariant.value(index.model().data(index, Qt.CheckStateRole))))
-
+        buttonStyle = QStyleOptionButton()
+        buttonStyle.state = QStyle.State_On if index.model().data(index, Qt.CheckStateRole) == QVariant(Qt.Checked) else QStyle.State_Off
+        buttonStyle.state |= QStyle.State_Enabled
+        
         if option.state & QStyle.State_MouseOver or option.state & QStyle.State_HasFocus:
-            buttonStyle.state |= QStyle.State_HasFocus
+            buttonStyle.state |= QStyle.State_HasFocus | QStyle.State_MouseOver
+        
 
         buttonStyle.rect = opt.rect.adjusted(4, -opt.rect.height() + ROW_HEIGHT, 0, 0)
         PackageDelegate.AppStyle().drawControl(QStyle.CE_CheckBox, buttonStyle, painter, None)
@@ -157,11 +159,10 @@ class PackageDelegate(QStyledItemDelegate):
         summary = QVariant.value(index.model().data(index, SummaryRole))
         ptype = QVariant.value(index.model().data(index, TypeRole))
         
-        rate = QVariant.value(index.model().data(index, RateRole))#.toInt()[0])
-        #print("rate={}".format(rate))
+        rate = int(QVariant.value(index.model().data(index, RateRole))) if QVariant.value(index.model().data(index, RateRole))!= None  else 0
         
-        installed = index.model().data(index, InstalledRole)
-
+        installed = QVariant.value(index.model().data(index, InstalledRole))
+        
         # We need to request update if its not possible to get meta data about the package
         try:
             # Get Package Icon if exists
@@ -205,7 +206,7 @@ class PackageDelegate(QStyledItemDelegate):
         # Package Name
         p.setFont(self.boldFont)
         p.drawText(left + textInner, top, width - textInner, itemHeight / 2,Qt.AlignBottom | Qt.AlignLeft, title) # 
-
+                
         tagWidth = 0
 
         _component_width = 0
@@ -217,7 +218,7 @@ class PackageDelegate(QStyledItemDelegate):
             rect = self.tagFontFM.boundingRect(option.rect, Qt.TextWordWrap, component)
             p.setPen(LIGHTGREEN)
             p.setBrush(LIGHTGREEN)
-            p.drawRoundRect(widthOfTitle , top + 12, rect.width() + 4, rect.height(), 10, 10)
+            p.drawRoundedRect(widthOfTitle , top + 12, rect.width() + 4, rect.height(), 10, 10)
             p.setPen(DARKGREEN)
             p.drawText(widthOfTitle + 2, top + 12, rect.width(), rect.height(), Qt.AlignCenter, component)
             p.setPen(foregroundColor)
@@ -232,14 +233,13 @@ class PackageDelegate(QStyledItemDelegate):
                 rect = self.tagFontFM.boundingRect(option.rect, Qt.TextWordWrap, isa)
                 p.setPen(LIGHTBLUE)
                 p.setBrush(LIGHTBLUE)
-                p.drawRoundRect(widthOfTitle , top + 12, rect.width() + 4, rect.height(), 10, 10)
+                p.drawRoundedRect(widthOfTitle , top + 12, rect.width() + 4, rect.height(), 10, 10)
                 p.setPen(DARKVIOLET)
                 p.drawText(widthOfTitle + 2, top + 12, rect.width(), rect.height(), Qt.AlignCenter, isa)
                 p.setPen(foregroundColor)
                 _component_width += rect.width() + 8
 
         if ptype not in ('None', 'normal'):
-            #print("ptype= {}".format(ptype))
             widthOfTitle = self.boldFontFM.width(title) + 6 + left + textInner + _component_width
             p.setFont(self.tagFont)
             rect = self.tagFontFM.boundingRect(option.rect, Qt.TextWordWrap, self.types[ptype][1])
@@ -340,6 +340,7 @@ class PackageDelegate(QStyledItemDelegate):
             buttonStyle = QStyleOptionButton()
             if option.state & QStyle.State_MouseOver or option.state & QStyle.State_HasFocus:
                 buttonStyle.state |= QStyle.State_HasFocus
+            
             buttonStyle.state |= QStyle.State_Enabled
             buttonStyle.text = i18n("Details")
 
@@ -364,14 +365,17 @@ class PackageDelegate(QStyledItemDelegate):
     def editorEvent(self, event, model, option, index):
         if event.type() == QEvent.MouseButtonRelease and index.column() == 0 and index.flags() & Qt.ItemIsUserCheckable:
             toggled = Qt.Checked if model.data(index, Qt.CheckStateRole) == QVariant(Qt.Unchecked) else Qt.Unchecked
+            self.packageSelected.emit(bool(toggled))
             return model.setData(index, toggled, Qt.CheckStateRole)
+        
         __event = QItemDelegate(self).editorEvent(event, model, option, index)
+        
         animate_requested = False
         if event.type() == QEvent.MouseButtonRelease and self.animatable:
             if self.rowAnimator.row == index.row():
                 epos = event.pos()
                 if self.rowAnimator.hoverLinkFilter.link_rect.contains(QPoint(epos.x(), epos.y() + 32)):
-                    url = QUrl(model.data(index, HomepageRole))
+                    url = QUrl(QVariant.value(model.data(index, HomepageRole)))
                     QDesktopServices.openUrl(url)
                     return __event
                 elif self.rowAnimator.hoverLinkFilter.button_rect.contains(epos, True):
@@ -382,7 +386,7 @@ class PackageDelegate(QStyledItemDelegate):
             # KeyCode 32 : Space key
             if event.key() == 32 and index.column() == index.model().columnCount() - 1:
                 animate_requested = True
-        if not unicode(model.data(index, DescriptionRole)) == '' and animate_requested:
+        if not QVariant.value(model.data(index, DescriptionRole)) == '' and animate_requested:
             self.rowAnimator.animate(index.row())
         return __event
 

@@ -26,6 +26,8 @@ from ui_basketdialog import Ui_BasketDialog
 class BasketDialog(PAbstractBox, Ui_BasketDialog):
     def __init__(self, state, parent):
         PAbstractBox.__init__(self, parent)
+        #super(BasketDialog, self).__init__(parent)
+        
         self.state = state
         self.setupUi(self)
         self.parent = parent
@@ -82,15 +84,15 @@ class BasketDialog(PAbstractBox, Ui_BasketDialog):
         self.disconnectModelSignals()
         self.animate(start = MIDCENTER, stop = BOTCENTER, direction = OUT)
 
-    def connectModelSignals(self):      # burayı düzenlerken dikkat et
-        self.packageList.model().dataChanged[QModelIndex,QModelIndex].connect(self.filterExtras)
+    def connectModelSignals(self):     
+        self.packageList.dataChanged[QModelIndex,QModelIndex].connect(self.filterExtras)    
 
-        self.packageList.model().dataChanged[QModelIndex,QModelIndex].connect(self.updateTotal)
+        self.packageList.dataChanged[QModelIndex,QModelIndex].connect(self.updateTotal)
 
     def disconnectModelSignals(self):
-        self.packageList.model().dataChanged[QModelIndex,QModelIndex].disconnect(self.filterExtras)
+        self.packageList.dataChanged[QModelIndex,QModelIndex].disconnect(self.filterExtras)
 
-        self.packageList.model().dataChanged[QModelIndex,QModelIndex].disconnect(self.updateTotal)
+        self.packageList.dataChanged[QModelIndex,QModelIndex].disconnect(self.updateTotal)
 
     def __initList(self, packageList):
         packageList.setModel(PackageProxy(self))

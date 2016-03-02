@@ -45,7 +45,8 @@ import pds
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, app = None):
-        QMainWindow.__init__(self, None)
+        #QMainWindow.__init__(self, None)
+        super(MainWindow, self).__init__(None)
         self.setupUi(self)
 
         self.app = app
@@ -56,9 +57,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.setWindowIcon(QIcon(":/data/package-manager.png"))
 
-        print("mainwidget yerleştiriliyor...")
         self.setCentralWidget(MainWidget(self))
-        print("mainwidget yerleştirildi.")
         self.cw = self.centralWidget()
 
         self.settingsDialog = SettingsDialog(self)
@@ -73,7 +72,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def connectMainSignals(self):
         self.cw.connectMainSignals()
         
-        #burada hata olabilir
         move_shortcut=QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Tab),self)
         move_shortcut.activated.connect(lambda: self.moveTab('next'))
         QShortcut(QKeySequence(Qt.SHIFT + Qt.CTRL + Qt.Key_Tab),self).activated.connect(lambda: self.moveTab('prev'))

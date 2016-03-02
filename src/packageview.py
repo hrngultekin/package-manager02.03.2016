@@ -18,9 +18,11 @@ from pmutils import *
 
 class PackageView(QtWidgets.QTableView):
     updateRequested = pyqtSignal()
+    dataChanged = pyqtSignal([QModelIndex,QModelIndex])
     
     def __init__(self, parent=None):
-        QtWidgets.QTableView.__init__(self, parent)
+        super(PackageView, self).__init__(parent)
+        #QtWidgets.QTableView.__init__(self, parent)
 
         self.select_all = QtWidgets.QCheckBox(i18n('Select all packages in this group'), self)
         self.select_all.resize(parent.width(), 32)
@@ -32,6 +34,11 @@ class PackageView(QtWidgets.QTableView):
         self.showComponents = False
         self.showIsA = False
         self.parent = parent
+        
+        
+        
+    def slotDataChanged(self,modelindex1,modelindex2):
+        self.dataChanged[QModelIndex, QModelIndex].emit(modelindex1,modelindex2)
 
     def hideSelectAll(self):
         self.needs_select_all = False
@@ -50,7 +57,7 @@ class PackageView(QtWidgets.QTableView):
 
     def setPackages(self, packages):
         self.model().sourceModel().setPackages(packages)
-
+        
     def selectedPackages(self):
         return self.model().sourceModel().selectedPackages()
 

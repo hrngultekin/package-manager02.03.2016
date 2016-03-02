@@ -1,0 +1,36 @@
+Hatalar 
+_______________________________
+
+-> genel ayarlar kımında hatalar var (uyarı mesajları çıkıyor)
+-> farklı ikonu olan paketlierin olduğu yerlerde yavaşlama var
+
+=========================================================================
+
+
+
+Denememesi Gereken Kısımlar
+_______________________________
+
+-> proxy ayarları 
+
+=========================================================================
+
+
+
+Geçici Çözümler
+_______________________________
+
+-> paket seçimine gecici çözüm bulundu 
+    (packageList ile seçim olayı arasındaki iletişimde sorun var!)
+
+=========================================================================
+
+
+
+Neler Yapılabilir?
+_______________________________
+
+-> güncelleme yapılabiliyor
+-> depo eklenip kaldırılabiliyor
+-> arama yapılabiliyor
+-> geçici çözümle paket seçimi yaılabiliyor

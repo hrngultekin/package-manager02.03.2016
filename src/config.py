@@ -38,11 +38,11 @@ class Config:
 
     def getBoolValue(self, option):
         default = self._initValue(option, False)
-        return self.config.value(option, QVariant(default))=="True"
+        return self.config.value(option, QVariant(default)) == "true"
 
     def getNumValue(self, option):
         default = self._initValue(option, 0)
-        return self.config.value(option, QVariant(default))#[0]
+        return int(self.config.value(option, QVariant(default)))#[0]
 
     def _initValue(self, option, value):
         if defaults.has_key(option):

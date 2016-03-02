@@ -65,7 +65,7 @@ class OperationManager(QObject):
 
         try:
             timeLeft = '%02d:%02d:%02d' % tuple([i for i in time.gmtime(left/rates)[3:6]])
-            self.elapsedTime[str].emit()
+            self.elapsedTime[str].emit(timeLeft)
         except ZeroDivisionError:
             pass
 

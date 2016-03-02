@@ -56,6 +56,7 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
     repositoriesUpdated = pyqtSignal()
     selectionStatusChanged = pyqtSignal([str])
     finished = pyqtSignal()
+    cleanUp = pyqtSignal()
     
     def __init__(self, parent = None):
         super(MainWidget, self).__init__(parent)
@@ -71,7 +72,8 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
         self.currentState = None
         self.completer = None
         self._updatesCheckedOnce = False
-
+        
+        
         # Search Thread
         self._searchThread = PThread(self, self.startSearch, self.searchFinished)
 
@@ -87,9 +89,10 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
         self.packageList.setModel(proxy)
         self.packageList.setItemDelegate(PackageDelegate(self, self.parent))
         self.packageList.setColumnWidth(0, 32)
-
-        #burada hata var
-        #self.packageList.model().dataChanged[QModelIndex,QModelIndex].connect(self.statusChanged)
+        
+        
+        
+        self.packageList.dataChanged[QModelIndex,QModelIndex].connect(self.statusChanged)
         
         self.packageList.updateRequested.connect(self.initialize)
 
@@ -113,12 +116,13 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
         self.searchButton.clicked.connect(self.searchActivated)
         self.searchLine.textEdited[str].connect(self.searchLineChanged)
         self.searchLine.returnPressed.connect(self.searchActivated)
-        #self.searchLine.clearButtonClicked.connect(self.groupFilter)       #burada hata var
+        self.searchLine.textChanged[str].connect(self.groupFilter)       
         self.typeCombo.activated[int].connect(self.typeFilter)
         self.stateTab.currentChanged[int].connect(self.switchState)
         self.groupList.groupChanged.connect(self.groupFilter)
         self.groupList.groupChanged.connect(lambda:self.searchButton.setEnabled(False))
         self.packageList.select_all.clicked[bool].connect(self.toggleSelectAll)
+        self.packageList.itemDelegate().packageSelected[bool].connect(self.toggleSelect)
         self.statusUpdater.selectedInfoChanged[int,str,int,str].connect(self.emitStatusBarInfo)
         self.statusUpdater.selectedInfoChanged[str].connect(lambda message: self.selectionStatusChanged[str].emit(message))
         self.statusUpdater.finished.connect(self.statusUpdated)
@@ -228,6 +232,9 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
                 self.initializeGroupList()
 
     def groupFilter(self):
+        if self.searchLine.text()!="":
+            return
+        
         waitCursor()
         self.packageList.resetMoreInfoRow()
         packages = self.state.groupPackages(self.groupList.currentGroup())
@@ -241,7 +248,8 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
         if self.currentState == self.state.UPGRADE:
             if self.groupList.count() == 0 and not self.searchUsed:
                 return
-
+        
+            
         if not self.searchLine.text() == '':
             self.pdsMessageBox.showMessage(i18n("Searching..."), busy = True)
             self.groupList.lastSelected = None
@@ -259,11 +267,15 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
         else:
             self.pdsMessageBox.hideMessage()
         self.initializeGroupList()
+        self.initializePackageList()
+        
 
     def startSearch(self):
         searchText = str(self.searchLine.text()).split()
         sourceModel = self.packageList.model().sourceModel()
         self.state.cached_packages = sourceModel.search(searchText)
+        self.finished.emit()
+        return self.state.cached_packages
 
     def setActionButton(self):
         self.actionButton.setEnabled(False)
@@ -351,6 +363,12 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
 
     def emitStatusBarInfo(self, packages, packagesSize, extraPackages, extraPackagesSize):
         self.selectionStatusChanged[str].emit(self.state.statusText(packages, packagesSize, extraPackages, extraPackagesSize))
+        
+        # paket seçimine geçici çözüm
+        if packages > 0:
+            self.actionButton.setEnabled(True)
+        else:
+            self.actionButton.setEnabled(False)
 
     def setSelectAll(self, packages=None):
         if packages:
@@ -375,8 +393,19 @@ class MainWidget(QWidget, PM, Ui_MainWidget):
         self.packageList.setFocus()
         self.statusChanged()
     
-    def destroyed(self):
-        self.finished.emit()
+    def toggleSelect(self, toggled):
+        #self._last_packages = self.packageList.model().getFilteredPackages()
+        if toggled:
+            if self.groupList.currentGroup() not in self._selectedGroups:
+                self._selectedGroups.append(self.groupList.currentGroup())
+        
+        #else:
+            #if self.groupList.currentGroup() in self._selectedGroups:
+            #    self._selectedGroups.remove(self.groupList.currentGroup())
+            #self.setSelectAll(self._last_packages)
+
+        self.packageList.setFocus()
+        self.statusChanged() 
 
     def showBasket(self):
 

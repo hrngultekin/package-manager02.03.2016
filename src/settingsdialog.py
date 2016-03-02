@@ -153,7 +153,7 @@ class CacheSettings(SettingsTab):
         self.settings.useCacheCheck.toggled[bool].connect(self.markChanged)
         self.settings.useCacheSpin.valueChanged[int].connect(self.markChanged)
         self.settings.useBandwidthLimit.toggled[bool].connect(self.markChanged)
-        #self.settings.bandwidthSpin.valueChanged[bool].connect(self.markChanged)    # burada hata var
+        self.settings.bandwidthSpin.valueChanged[int].connect(self.markChanged)    
         self.settings.openCacheDir.clicked.connect(self.openCacheDir)
 
     def openCacheDir(self):
@@ -245,14 +245,15 @@ class RepositorySettings(SettingsTab):
         self.repoDialog.show()
 
     def __addRepository(self):
-        repoName = self.repoDialog.repoName.text()
-        repoAddress = self.repoDialog.repoAddress.currentText()
+        repoName = str(self.repoDialog.repoName.text())
+        repoAddress = str(self.repoDialog.repoAddress.currentText())
         if not re.match("^[0-9%s\-\\_\\.\s]*$" % str(pmutils.letters()), str(repoName)) or str(repoName) == '':
             QMessageBox.warning(self.settings,
                                 i18n("Pisi Error"),
                                 i18n("Not a valid repository name"))
             return
-        if not repoAddress.endsWith("xml") and not repoAddress.endsWith("xml.bz2") and not repoAddress.endsWith('xz'):
+        print dir(repoAddress)
+        if not repoAddress.endswith("xml") and not repoAddress.endswith("xml.bz2") and not repoAddress.endswith('xz'):
             QMessageBox.warning(self.settings,
                                 i18n("Pisi Error"),
                                 i18n('<qt>Repository address should end with xml or xml.bz2 or xz suffix.<p>Please try again.</qt>'))
